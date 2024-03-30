@@ -1,0 +1,5 @@
+algo,cv_rsq,ho_rsq
+OLS regression,.07,.00
+Elastic Net,.86,.52
+Random Forest,.87,.64
+XGB,.98,.57

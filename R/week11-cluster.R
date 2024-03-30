@@ -18,11 +18,6 @@ gss_tbl <- GSS2016 %>%
   sapply(as.numeric)  %>%
   as_tibble()
 
-# Visualization
-gss_tbl %>%
-  ggplot(aes(x = `work hours`)) +
-  geom_histogram() 
-
 # Analysis
 Original <- rep(0,4)
 Parallel <- rep(0,4)
@@ -85,7 +80,7 @@ time_xgb = toc()
 Original[4] = time_xgb$toc - time_xgb$tic 
 
 
-local_cluster <- makeCluster(detectCores() - 1) 
+local_cluster <- makeCluster(30) # Modify to take 30 clusters - currently I have 7 
 registerDoParallel(local_cluster)
 
 
@@ -146,7 +141,7 @@ R2_elastic <- cor(elastic_predict, gss_test_tbl$`work hours`)^2
 R2_rf <- cor(rf_predict, gss_test_tbl$`work hours`) ^2
 R2_xgb <- cor(xgb_predict, gss_test_tbl$`work hours`) ^2
 
-table1_tbl <- tibble(
+`Table 3` <- tibble(
   algo = c("OLS regression", "Elastic Net", "Random Forest", "XGB"),
   cv_rsq = c(sub("^0\\.", ".", formatC(model_ols$results$Rsquared, format = 'f', digits = 2)),
              sub("^0\\.", ".", formatC(max(model_elastic$results$Rsquared), format = 'f', digits = 2)),
@@ -158,9 +153,12 @@ table1_tbl <- tibble(
              sub("^0\\.", ".", formatC(R2_xgb, format = 'f', digits = 2)))
 )
 
-table2_tbl <- tibble(
+`Table 4` <- tibble(
   algo = c("OLS regression", "Elastic Net", "Random Forest", "XGB"),
-  original = Original,
-  parallelized = Parallel
+  supercomputer = Original,
+  'supercomputer_30' = Parallel
 )
 
+# Save as csv
+write_csv(`Table 3`, "../outputs/table3.csv")
+write_csv(`Table 4`, "../outputs/table4.csv")
