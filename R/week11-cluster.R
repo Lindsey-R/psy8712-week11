@@ -3,9 +3,9 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 library(tidyverse)
 library(haven) 
 library(caret)
-library(tictoc) # calculate parallel time
+library(tictoc) 
 library(parallel)
-library(doParallel) # to do parallel
+library(doParallel)
 set.seed(12138)
 
 # Data Import and Cleaning
@@ -14,7 +14,7 @@ gss_tbl <- GSS2016 %>%
   filter(!is.na(MOSTHRS)) %>% 
   rename(`work hours` = MOSTHRS) %>% 
   select(-HRS1, -HRS2) %>% 
-  select(where(function(x) (sum(is.na(x))/nrow(.)) < 0.75)) %>%  # Remove 75% empty in a more efficienct way
+  select(where(function(x) (sum(is.na(x))/nrow(.)) < 0.75)) %>% 
   sapply(as.numeric)  %>%
   as_tibble()
 
@@ -24,8 +24,6 @@ gss_tbl %>%
   geom_histogram() 
 
 # Analysis
-
-# Store tictoc time
 Original <- rep(0,4)
 Parallel <- rep(0,4)
 
@@ -73,7 +71,7 @@ model_rf <- train(`work hours` ~ .,
                   trControl = myControl)
 rf_predict <- predict(model_rf, gss_test_tbl, na.action = na.pass)
 time_rf = toc()
-Original[3] = time_rf$toc - time_rf$tic # Calculate time
+Original[3] = time_rf$toc - time_rf$tic 
 
 tic()
 model_xgb <- train(`work hours` ~ ., 
@@ -84,13 +82,13 @@ model_xgb <- train(`work hours` ~ .,
                    trControl = myControl)
 xgb_predict <- predict(model_xgb, gss_test_tbl, na.action = na.pass)
 time_xgb = toc()
-Original[4] = time_xgb$toc - time_xgb$tic # Calculate time
+Original[4] = time_xgb$toc - time_xgb$tic 
 
-## Analysis with parallel
-local_cluster <- makeCluster(detectCores() - 1) # specify the number of cores to use
+
+local_cluster <- makeCluster(detectCores() - 1) 
 registerDoParallel(local_cluster)
 
-## Parallel ols
+
 tic()
 model_ols_par <- train(`work hours` ~ ., 
                    gss_train_tbl,
@@ -103,7 +101,6 @@ time_ols_par = toc()
 Parallel[1] = time_ols_par$toc - time_ols_par$tic # Calculate time
 
 
-## Parallel elastic
 tic()
 model_elastic_par <- train(`work hours` ~ ., 
                        data = gss_train_tbl,
@@ -113,7 +110,7 @@ model_elastic_par <- train(`work hours` ~ .,
                        trControl = myControl)
 elastic_predict_par <- predict(model_elastic_par, gss_test_tbl, na.action = na.pass)
 time_elastic_par = toc()
-Parallel[2] = time_elastic_par$toc - time_elastic_par$tic # Calculate time
+Parallel[2] = time_elastic_par$toc - time_elastic_par$tic 
 
 tic()
 model_rf_par <- train(`work hours` ~ ., 
@@ -124,7 +121,7 @@ model_rf_par <- train(`work hours` ~ .,
                   trControl = myControl)
 rf_predict_par <- predict(model_rf_par, gss_test_tbl, na.action = na.pass)
 time_rf_par = toc()
-Parallel[3] = time_rf_par$toc - time_rf_par$tic # Calculate time
+Parallel[3] = time_rf_par$toc - time_rf_par$tic 
 
 
 tic()
@@ -136,11 +133,11 @@ model_xgb_par <- train(`work hours` ~ .,
                    trControl = myControl)
 xgb_predict_par <- predict(model_xgb_par, gss_test_tbl, na.action = na.pass)
 time_xgb_par = toc()
-Parallel[4] = time_xgb_par$toc - time_xgb_par$tic # Calculate time
+Parallel[4] = time_xgb_par$toc - time_xgb_par$tic
 
 
 stopCluster(local_cluster)
-registerDoSEQ() ## STOP parallelization
+registerDoSEQ
 
 
 # Publication
@@ -166,12 +163,4 @@ table2_tbl <- tibble(
   original = Original,
   parallelized = Parallel
 )
-
-### Question Answers
-# 1. Only XGB model is benefited. Maybe the other three models are rather simple so one core is good
-# enough (as we see in datacamp some simple models benefit from one core).
-# 2. Fastest one is elastic net - 3s; slowest one is random forest - 104s. I'm not sure about it - maybe
-# elastic net is more suitable to train with multiple cores? And random forest each core needs to compute
-# the random tree independently.
-# 3. I will use XGB. It provides the highest R^2 and take much less time with parallelization. 
 
