@@ -159,5 +159,5 @@ R2_xgb <- cor(xgb_predict, gss_test_tbl$`work hours`) ^2
 )
 
 # Save as csv
-write_csv(`Table 3`, "../outputs/table3.csv")
-write_csv(`Table 4`, "../outputs/table4.csv")
+write_csv(`Table 3`, "table3.csv")
+write_csv(`Table 4`, "table4.csv")
