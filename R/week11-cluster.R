@@ -161,3 +161,16 @@ R2_xgb <- cor(xgb_predict, gss_test_tbl$`work hours`) ^2
 # Save as csv
 write_csv(`Table 3`, "table3.csv")
 write_csv(`Table 4`, "table4.csv")
+
+## Answer questions
+# 1. It cut the most for random forest (also a lot for XGB). Random forest takes 
+# the longest time on my local computer,  I think it is due to more cores make
+# it easier to build trees and calculate results.
+
+# 2. More cores, less time.
+
+# 3. I will definitely do. In my condition I wait 4 minutes for the supercomputer 
+# to process the result and give it back - it is much faster than my personal laptop,
+# and if I'm testing multiple models at once it will work even better and more
+# time efficient. However, For easy models, such as only fitting lm and glmnet, I think 
+# there is no need for supercomputer. 
