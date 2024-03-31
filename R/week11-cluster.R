@@ -8,7 +8,7 @@ library(doParallel)
 set.seed(12138)
 
 # Data Import and Cleaning
-GSS2016 <- read_sav("../data/GSS2016.sav") 
+GSS2016 <- read_sav(file = "GSS2016.sav") 
 gss_tbl <- GSS2016 %>%
   filter(!is.na(MOSTHRS)) %>% 
   rename(`work hours` = MOSTHRS) %>% 
